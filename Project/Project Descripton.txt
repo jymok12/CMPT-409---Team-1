@@ -1,0 +1,26 @@
+-10 min for total presentation
+
+Topic:
+Grover's algorithm's
+
+https://qiskit.org/textbook/ch-algorithms/grover.html
+-Real dataset: 
+Idea - Riot data dragon (e.g. best rank for winning games as x character in y region)
+
+grover's alg, surround with real search program (pull data as json from some real source), have search() function
+Test 1: override as classical algo (actually implemented)
+Test 2: override as quantum algo (call in qiskit --actually implement this)
+
+1. time complexity analysis of program with clasical algo
+2. time complexity analysis of program with quantum algo
+  compare and contrast program with classical search vs quantum grover's search
+
+https://developer.riotgames.com/docs/lol
+
+Hi Professor,
+
+Our group (Team 1) would like to do a project on: Grover's algorithm
+
+We would like to (tentatively) use the data from Riot Games' Data Dragon dataset, and perform a search over this data to find the best in-game rank to be in, to maximize the number of won games as a certain character. We will accomplish this by using Grover's search algorithm as well as an optimal classical search algorithm, and perform a time complexity analysis on this program (with and without the quantum search), as well as compare and contrast the results.
+
+Let me know if this works, Thanks.
