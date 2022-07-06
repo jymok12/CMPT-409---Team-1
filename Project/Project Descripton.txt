@@ -24,3 +24,26 @@ Our group (Team 1) would like to do a project on: Grover's algorithm
 We would like to (tentatively) use the data from Riot Games' Data Dragon dataset, and perform a search over this data to find the best in-game rank to be in, to maximize the number of won games as a certain character. We will accomplish this by using Grover's search algorithm as well as an optimal classical search algorithm, and perform a time complexity analysis on this program (with and without the quantum search), as well as compare and contrast the results.
 
 Let me know if this works, Thanks.
+
+
+
+-Transform data from riot into ones and zeros; reduce to zero finding problem (simple for grover's)
+  -One col of JSON data; find zeros in col (col should represent smth; arbitary conv from riot data into col of numbers)
+
+
+
+
+Progress:
+-Minimum viable application of a quantum algorithm
+
+Split roles:
+-Richard: classical fastest (binary search) search alg for program
+-Justin: Parse data from (tentative) riot data dragon and convert it into useable form for zero finding problem
+-David: Working on Deustch Algorithm assn (A3), and will help with final aspects of project e.g. implementation/time complexity analysis
+-William: (tentatively) Will implement Grover's algorithm with the provided data
+-Brian: Team lead, organizing project components and will help implement grover's algorithm, and write time complexity analysis. Will provide support to others as needed
+
+What we have done so far: Parsing provided (from online) JSON data into python and forming it for searching purposes
+-Expected end result: Will have a program that can run in classical mode (running search with classical binary search), or quantum mode (overrides classical search alg function with quantum search alg function)
+
+
