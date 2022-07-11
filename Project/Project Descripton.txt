@@ -1,4 +1,4 @@
--10 min for total presentation
+-10 min for total presentation 
 
 Topic:
 Grover's algorithm's
