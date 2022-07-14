@@ -5,19 +5,10 @@ import json
 from datetime import datetime
 
 # %%
-df_data = pd.DataFrame()
-for file in os.listdir('G:\CMPT 409\CMPT-409---Team-1\Project'):
-    if file.endswith(".json"):
-        print(file)
-        df = pd.read_json(file)
-        data = pd.json_normalize(df['data'])
-        df_data = pd.concat([df_data, data])
-        df_data = df_data.dropna(how='all')
-df_data
+dict_from_csv = pd.read_csv('G:\CMPT 409\CMPT-409---Team-1\Project\high_diamond_ranked_10min.csv', header = None, index_col = 0, squeeze = True).to_dict()
 
-# %%
-df_data.to_csv('G:\CMPT 409\CMPT-409---Team-1\Project\combined_output.csv', index = False)
+with open('dict.json','w') as fp:
+    json.dump(dict_from_csv, fp)
+dict_from_csv
 
 
-
-# %%
