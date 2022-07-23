@@ -1,10 +1,10 @@
 # Read Data
 # 1. If the modified csv file or the minimum id txt file does not exist, then this will generate the modified csv file and the minimum id txt file
 # 2. Each id in the modified csv file is subtracted by the minimum id
-# 3. Read the modified csv file
-# 4. Get the id list
+# 3. Read the modified csv file and the minimum id txt file
+# 4. Get the id list and the id dictionary
 # 5. Search the target id in the id list
-# 6. Get the info of the target id
+# 6. Search the target id in the id dictionary
 
 
 # Libraries
@@ -18,6 +18,8 @@ original_csv_file_name = 'high_diamond_ranked_10min.csv'
 modified_csv_file_name = 'high_diamond_ranked_10min_updated.csv'
 
 
+###########################################################################################
+# Generate Files
 # Generate the modified csv file and the minimum id file
 def generate_modified_csv():
     original_csv = pd.read_csv(original_csv_file_name)
@@ -36,9 +38,10 @@ def check_files():
     return os.path.exists(modified_csv_file_name) and os.path.exists(minimum_id_file_name)
 
 
+###########################################################################################
 # Read the modified csv file
 def read_modified_csv():
-    return pd.read_csv(modified_csv_file_name)
+    return pd.read_csv(modified_csv_file_name, index_col=0)
 
 
 # Read the minimum id txt file
@@ -47,26 +50,58 @@ def read_minimum_id_txt():
     return int(minimum_id_file.readlines()[0])
 
 
-# Linear search
+###########################################################################################
+# Create a List and a Dictionary
+# Create a id list
+def create_id_list(modified_csv):
+    return modified_csv.index.to_list()
+
+
+# Create a id dictionary
+def create_id_dict(modified_csv):
+    return modified_csv.to_dict()
+
+
+###########################################################################################
+# Search ID in the List
+# Linear search in the list
+# Returns
+# True: target id exists, -1: target id does not exist
+def linear_search_list(id_list, target_id):
+    for i in range(len(id_list)):
+        if id_list[i] == target_id:
+            return True
+    return False
+
+
+# Linear search in the list (index version)
 # Returns
 # target_index: the index of target, -1: target id does not exist
-def linear_search(id_list, target_id):
+def linear_search_list_index(id_list, target_id):
     for i in range(len(id_list)):
         if id_list[i] == target_id:
             return i
     return -1
 
 
-# Get the id list
-def get_id_list(modified_csv):
-    return modified_csv['gameId'].to_list()
-
-
-# Get the target info
-def get_target_info(modified_csv, target_index):
+# Get the target info using target index
+def get_target_info_list_index(modified_csv, target_index):
     return modified_csv.iloc[target_index]
 
 
+###########################################################################################
+# Search ID in the Dictionary
+# Linear search in the dictionary
+# Returns
+# True: target id exists, -1: target id does not exist
+def linear_search_dict(id_dict, target_id):
+    for key in id_dict['blueWins']:
+        if key == target_id:
+            return True
+    return False
+
+
+###########################################################################################
 # Main function
 if __name__ == "__main__":
     # Generate files
@@ -77,14 +112,29 @@ if __name__ == "__main__":
     modified_csv = read_modified_csv()
     minimum_id = read_minimum_id_txt()
 
-    # Get the id list
-    id_list = get_id_list(modified_csv)
+    # Create a list and a dictionary
+    id_list = create_id_list(modified_csv)
+    id_dict = create_id_dict(modified_csv)
 
-    # Execute the linear search function
+    # Search target
     target_id = 228013878
-    target_index = linear_search(id_list, target_id)
-    print('Target Index:', target_index)
-
-    # Get the target info
-    print(get_target_info(modified_csv, target_index))
     
+    # Search in the list
+    # Check the target in the list
+    output = linear_search_list(id_list, target_id)
+    print(output)
+
+    # Get the target index in the list
+    target_index = linear_search_list_index(id_list, target_id)
+    print(target_index)
+
+    # Get the target info though the target index
+    print(get_target_info_list_index(modified_csv, target_index))
+
+    # Search in the dictionary
+    # Check the target in the dictionary
+    output = linear_search_dict(id_dict, target_id)
+    print(output)
+
+    # Get the target info though the dictionary
+    print(id_dict['blueWins'][target_id])
