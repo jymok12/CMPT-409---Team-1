@@ -8,9 +8,21 @@
 
 
 # Libraries
+import math
 import pandas as pd
 import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+import pickle
+from qiskit import IBMQ, Aer, assemble, transpile, execute
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit.visualization import plot_histogram
+
+from qiskit.algorithms import Grover, AmplificationProblem
+from qiskit.circuit.library.phase_oracle import PhaseOracle
+from qiskit.quantum_info import Statevector
 
 # File Names
 minimum_id_file_name = 'minimum_id.txt'
@@ -76,7 +88,7 @@ def linear_search_list(id_list, target_id):
 
 # Linear search in the list (index version)
 # Returns
-# target_index: the index of target, -1: target id does not exist
+# linear_target_index: the index of target, -1: target id does not exist
 def linear_search_list_index(id_list, target_id):
     for i in range(len(id_list)):
         if id_list[i] == target_id:
@@ -100,7 +112,75 @@ def linear_search_dict(id_dict, target_id):
             return True
     return False
 
+###########################################################################################
+#       sources: 
+# https://qiskit.org/documentation/partners/qiskit_ibm_runtime/tutorials/grover_with_sampler.html
+# https://qiskit.org/textbook/ch-algorithms/grover.html
+# https://qiskit.org/documentation/tutorials/algorithms/07_grover_examples.html
+# https://qiskit.org/documentation/stubs/qiskit.algorithms.Grover.html
+# https://quantumcomputing.stackexchange.com/questions/15945/implementing-grovers-oracle-with-multiple-solutions-in-qiskit
+# https://www.quantiki.org/wiki/grovers-search-algorithm
+#
+###########################################################################################
+# Search ID in the List
+# Grover's search in the list
+# note: ID must exist in the list, otherwise bogus result
+# Returns
+# grover_target_index: the index of target
+def grovers_search_list_index(id_list, target_id, known_index):
+    # our search key is 228013878 or '1101100101110011011100110110' 
+    # and known_index is 2
+    
+    size = len(id_list)
+    
+    # number of qbits required (14 in our case)
+    n = math.ceil(math.log(size, 2))
+    
+    # grover iterations within circuit (78 in our case)
+    # (pi*sqrt(N))/4     
+    # https://www.quantiki.org/wiki/grovers-search-algorithm
+    
+    iters = int((math.pi*math.sqrt(size))/4)
+    
+    # circuit executions (1024 is default)
+    shots = 1024
+    
+    # index taken from classical search!
+    # format the target as a binary string, for checking validity
+    target_binary = format(known_index, f"0{n}b") 
+    
+    # create a state vector with the phases flipped for the values we want to find
+    # https://quantumcomputing.stackexchange.com/questions/15945/implementing-grovers-oracle-with-multiple-solutions-in-qiskit
+    # need power of 2 # states, but id_list is not big enough, so just fill the rest with zeros
+    
+    oracle = Statevector([1 if state < size and id_list[state] == target_id else 0 for state in range(0, 2**n)])
+    
+    problem = AmplificationProblem(oracle, is_good_state=target_binary)
+    
+    grover = Grover(iterations=iters)
+    grover_circuit = grover.construct_circuit(problem)
+    grover_circuit.measure_all()
+    
+    # grover_circuit.draw(output='mpl')
+    # show()
+    
+    result = execute(grover_circuit, backend=Aer.get_backend('aer_simulator'), shots=shots).result()
+    all_probabilities = result.get_counts()
+    
+    answer_binary = max(all_probabilities, key=all_probabilities.get)
+    answer = int(answer_binary, 2)
 
+    # save this because it takes forever to compute
+    with open('grover_probabilities.pkl', 'wb') as f:
+        pickle.dump(all_probabilities, f)
+        
+    # with open('grover_probabilities.pkl', 'rb') as f:
+    #    all_probabilities = pickle.load(f)
+    
+    return answer
+
+    
+    
 ###########################################################################################
 # Main function
 if __name__ == "__main__":
@@ -111,7 +191,7 @@ if __name__ == "__main__":
     # Read files
     modified_csv = read_modified_csv()
     minimum_id = read_minimum_id_txt()
-
+    
     # Create a list and a dictionary
     id_list = create_id_list(modified_csv)
     id_dict = create_id_dict(modified_csv)
@@ -122,19 +202,37 @@ if __name__ == "__main__":
     # Search in the list
     # Check the target in the list
     output = linear_search_list(id_list, target_id)
-    print(output)
-
+    print(f"Linear search output: {output}")
+    
     # Get the target index in the list
-    target_index = linear_search_list_index(id_list, target_id)
-    print(target_index)
-
-    # Get the target info though the target index
-    print(get_target_info_list_index(modified_csv, target_index))
-
-    # Search in the dictionary
-    # Check the target in the dictionary
-    output = linear_search_dict(id_dict, target_id)
-    print(output)
-
-    # Get the target info though the dictionary
-    print(id_dict['blueWins'][target_id])
+    linear_target_index = linear_search_list_index(id_list, target_id)
+    print(f"Linear search target index: {linear_target_index}")
+    
+    #TEMPCOMMENT
+    ## Get the target info though the target index (linear)
+    #print("Row found by linear search")
+    #print(get_target_info_list_index(modified_csv, linear_target_index))
+    
+    grover_target_index = grovers_search_list_index(id_list, target_id, linear_target_index)
+    print(f"Grover's search target index: {grover_target_index}")
+    
+    # print the result and the known correct answer.
+    print(f"Quantum index: {grover_target_index}")
+    print(f"Correct index: {linear_target_index}")
+    print('Success!' if grover_target_index == linear_target_index  else 'Failure!')
+    
+    
+    #TEMPCOMMENT
+    ## Get the target info though the target index (grover)
+    #print("Row found by Grover's")
+    #print(get_target_info_list_index(modified_csv, grover_target_index))
+    
+    #TEMPCOMMENT
+    ## Search in the dictionary
+    ## Check the target in the dictionary
+    #output = linear_search_dict(id_dict, target_id)
+    #print(output)
+    
+    #TEMPCOMMENT
+    ## Get the target info though the dictionary
+    #print(id_dict['blueWins'][target_id])
