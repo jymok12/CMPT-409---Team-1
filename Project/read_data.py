@@ -161,21 +161,35 @@ def grovers_search_list_index(id_list, target_id, known_index):
     grover_circuit = grover.construct_circuit(problem)
     grover_circuit.measure_all()
     
+    # image of circuit
     # grover_circuit.draw(output='mpl')
     # show()
     
-    result = execute(grover_circuit, backend=Aer.get_backend('aer_simulator'), shots=shots).result()
-    all_probabilities = result.get_counts()
+    # calculate result
+    # result = execute(grover_circuit, backend=Aer.get_backend('aer_simulator'), shots=shots).result()
+    # all_probabilities = result.get_counts()
+    
+    # load from file, don't recalc
+    with open('grover_probabilities.pkl', 'rb') as f:
+        all_probabilities = pickle.load(f)
+    
+    list_probs = [0 for _ in range(0, 2**n)]
+    for idx_bin, prob in all_probabilities.items():
+        # set probability of index (divide by number of shots, as that is the total count)
+        list_probs[int(idx_bin, 2)] = prob/shots
+    
+    # graph of probabilities
+    plt.bar(list(range(0, 2**n)), list_probs)
+    plt.ylabel('Probability')
+    plt.xlabel('Index')
+    plt.show()
     
     answer_binary = max(all_probabilities, key=all_probabilities.get)
     answer = int(answer_binary, 2)
 
-    # save this because it takes forever to compute
-    with open('grover_probabilities.pkl', 'wb') as f:
-        pickle.dump(all_probabilities, f)
-        
-    # with open('grover_probabilities.pkl', 'rb') as f:
-    #    all_probabilities = pickle.load(f)
+    # uncomment to save result because it takes a long time to compute
+    #with open('grover_probabilities.pkl', 'wb') as f:
+    #    pickle.dump(all_probabilities, f)
     
     return answer
 
